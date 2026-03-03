@@ -1,0 +1,84 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python3 src/data_ingestion.py
+    deps:
+    - path: src/data_ingestion.py
+      hash: md5
+      md5: 637a012a72ff1a6197da53d1005b1393
+      size: 638
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: 31e651b1ecf8080e509cf272da7a0e89.dir
+      size: 135809
+      nfiles: 2
+  data_preprocessing:
+    cmd: python3 src/data_preprocessing.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 31e651b1ecf8080e509cf272da7a0e89.dir
+      size: 135809
+      nfiles: 2
+    - path: src/data_preprocessing.py
+      hash: md5
+      md5: d948652d185f4f9726792019ed594db1
+      size: 1472
+    outs:
+    - path: data/preprocessed
+      hash: md5
+      md5: a709990fc2dab5b22f06c1bd903456f9.dir
+      size: 122526
+      nfiles: 2
+  feature_engineer:
+    cmd: python3 src/feature_engineering.py
+    deps:
+    - path: data/preprocessed
+      hash: md5
+      md5: a709990fc2dab5b22f06c1bd903456f9.dir
+      size: 122526
+      nfiles: 2
+    - path: src/feature_engineering.py
+      hash: md5
+      md5: ef48a98173e68277787484eaa4659bc8
+      size: 799
+    outs:
+    - path: data/fe
+      hash: md5
+      md5: 361427f7fe2a3f22625b07ab102ce041.dir
+      size: 8194412
+      nfiles: 2
+  model:
+    cmd: python3 src/model.py
+    deps:
+    - path: data/fe
+      hash: md5
+      md5: 361427f7fe2a3f22625b07ab102ce041.dir
+      size: 8194412
+      nfiles: 2
+    - path: src/model.py
+      hash: md5
+      md5: a199ff2c2f21bf496ab995db15d6f392
+      size: 387
+    outs:
+    - path: model.pkl
+      hash: md5
+      md5: 96a32e2a5cb4476669598be3e520535a
+      size: 45965
+  model_eval:
+    cmd: python3 src/model_eval.py
+    deps:
+    - path: model.pkl
+      hash: md5
+      md5: 96a32e2a5cb4476669598be3e520535a
+      size: 45965
+    - path: src/model_eval.py
+      hash: md5
+      md5: 21f1981fd0e79c136334737cd22e8585
+      size: 716
+    outs:
+    - path: metrics.json
+      hash: md5
+      md5: ecd415a008c51f5fc2df80b2acdcac79
+      size: 71

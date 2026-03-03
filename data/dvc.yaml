@@ -1,0 +1,8 @@
+stages:
+  feature_engineer:
+    cmd: python3 src/feature_engineering.py
+    deps:
+    - data/preprocessed
+    - src/feature_engineering
+    outs:
+    - data/fe

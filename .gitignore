@@ -1,0 +1,4 @@
+.venv
+/model.pkl
+/model_eval.py
+/metrics.json
