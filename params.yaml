@@ -1,0 +1,8 @@
+data_ingestion:
+  test_size: 0.2
+
+feature_engineering:
+  n_festures: 20
+
+model:
+  n_estimators: 30
