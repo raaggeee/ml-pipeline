@@ -8,14 +8,12 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer, WordNetLemmatizer
 from sklearn.feature_extraction.text import CountVectorizer
 
-raw_data = os.path.join("data", "raw")
-os.chdir(raw_data)
-
-train_data = pd.read_csv("train.csv")
-test_data = pd.read_csv("test.csv")
-
 nltk.download("wordnet")
 nltk.download("stopwords")
+
+def load_df(df_path):
+    data = pd.read_csv(df_path)
+    return data
 
 def lemmatization(text):
     wordnet = WordNetLemmatizer()
@@ -42,17 +40,25 @@ def normalize_text(df):
 
     return df
 
-train_processed_data = normalize_text(train_data)
-test_processed_data = normalize_text(test_data)
+def save_df(df, df_name):
+    os.makedirs("/data2/ml-pipeline/data/preprocessed", exist_ok=True)
+    os.chdir("/data2/ml-pipeline/data/preprocessed")
+    df.to_csv(df_name)
 
-#save dir
-save_data = os.path.join("data", "preprocessed")
-os.chdir("../..")
-os.makedirs(save_data, exist_ok=True)
-os.chdir(save_data)
+def main():
+    raw_data = os.path.join("data", "raw")
+    os.chdir(raw_data)
 
-train_processed_data.to_csv("train_preprocessed.csv")
-test_processed_data.to_csv("test_preprocessed.csv")
+    train_data = load_df("train.csv")
+    test_data = load_df("test.csv")
 
+    train_processed_data = normalize_text(train_data)
+    test_processed_data = normalize_text(test_data)
+
+    save_df(train_processed_data, "train_preprocessed.csv")
+    save_df(test_processed_data, "test_preprocessed.csv")
+
+if __name__ == "__main__":
+    main()
 
 

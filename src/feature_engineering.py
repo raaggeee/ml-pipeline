@@ -3,34 +3,67 @@ import numpy as np
 import os
 from sklearn.feature_extraction.text import CountVectorizer
 import yaml
+import logging
 
-with open("params.yaml", "r") as f:
-    params = yaml.safe_load(f)
+logger = logging.getLogger("Feature Engineering")
+logger.setLevel("DEBUG")
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
-n_features = params["feature_engineering"]["n_festures"]
+console_logger = logging.StreamHandler()
+console_logger.setFormatter(formatter)
+console_logger.setLevel("DEBUG")
+logger.addHandler(console_logger)
 
-train_data = pd.read_csv("/data2/ml-pipeline/data/preprocessed/train_preprocessed.csv")
-test_data = pd.read_csv("/data2/ml-pipeline/data/preprocessed/test_preprocessed.csv")
+file_logger = logging.FileHandler("feature_engineering.log")
+file_logger.setFormatter(formatter)
+file_logger.setLevel("ERROR")
+logger.addHandler(file_logger)
 
-X_train = train_data["comment"]
-y_train = train_data["label"]
+def load_yaml(path):
+    with open(path, "r") as f:
+        params = yaml.safe_load(f)
 
-X_test = test_data["comment"]
-y_test = test_data["label"]
+    logging.info("Opened YAML File...")
 
-vectorizer = CountVectorizer(max_features=n_features)
-X_train_bow = vectorizer.fit_transform(X_train)
-X_test_bow = vectorizer.transform(X_test)
+    return params
 
-train_df = pd.DataFrame(X_train_bow.toarray())
-train_df["label"] = y_train
+def load_df(path):
+    df = pd.read_csv(path)
+    logging.info("Opened DF...")
+    return df
 
-test_df = pd.DataFrame(X_test_bow.toarray())
-test_df["label"] = y_test
+def save_df(df, df_name):
+    os.makedirs("/data2/ml-pipeline/data/fe", exist_ok=True)
+    os.chdir("/data2/ml-pipeline/data/fe")
+    df.to_csv(df_name)
+    logging.info("Saved modified data...")
 
-os.makedirs("data/fe", exist_ok=True)
-os.chdir("data/fe")
-train_df.to_csv("train_fe.csv")
-test_df.to_csv("test_fe.csv")
+def normalize_features(df, n_features):
+    X = df["comment"]
+    y = df["label"]
+
+    vectorizer = CountVectorizer(max_features=n_features)
+
+    X_bow = vectorizer.fit_transform(X)
+
+    df = pd.DataFrame(X_bow.toarray())
+    df["label"] = y
+
+    return df
+
+def main():
+    params = load_yaml("params.yaml")
+    n_features = params["feature_engineering"]["n_festures"]
+
+    train_data = load_df("/data2/ml-pipeline/data/preprocessed/train_preprocessed.csv")
+    test_data = load_df("/data2/ml-pipeline/data/preprocessed/test_preprocessed.csv")
+
+    train_df = normalize_features(train_data, n_features)
+    test_df = normalize_features(test_data, n_features)
+
+    save_df(train_df, "train_fe.csv")
+    save_df(test_df, "test_fe.csv")
 
 
+if __name__ == "__main__":
+    main()
